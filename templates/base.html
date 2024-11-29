@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html class="h-100">
+
+<head>
+    <title>Django Backend</title>
+    <!--FavIcon-->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;700&display=swap" rel="stylesheet">
+    <!-- Fontawesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous">
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Custom JS -->
+    <script src="{% static 'js/script.js' %}"></script>
+
+</head>
+
+<body class="d-flex flex-column h-100 main-bg">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light py-3 sticky-top">
+        <div class="container-fluid">
+            <!-- Include Mobile Navigation -->
+            {% include "includes/mobile-top-header.html" %}
+
+            <!-- Include Web Navigation -->
+            {% include "includes/main-nav.html" %}
+        </div>
+    </nav>
+
+    <main class="flex-shrink-0 main-bg">
+        {% block content %}
+        <!-- Content Goes here -->
+        {% endblock content %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+        <a class="footer" href="{% url 'home' %}">
+            <img src="https://res.cloudinary.com/dnbbm9vzi/image/upload/v1732111106/Screenshot_2024-11-20_at_1.57.54_PM-removebg-preview_q5y8br.png"
+                alt="Logo" class="logo-image" style="width: 140px; margin-left: 20px;">
+            <ul class="nav col-md-4 justify-content-end">
+                <!--
+            <li class="nav-item px-2"><a href="" class="nav-link px-2 text-dark">Blog</a></li>
+            <li class="nav-item px-2"><a href="" class="nav-link px-2 text-dark">Contact</a></li>
+            -->
+                <li class="nav-item px-2"><a href="" class="nav-link px-2 text-dark" target="_blank"
+                        rel="Medium Terms Policy">Link 1</a></li>
+                <li class="nav-item px-2"><a href="" class="nav-link px-2 text-dark" target="_blank"
+                        rel="Medium Privacy Policy">Link 2</a></li>
+            </ul>
+    </footer>
+
+</body>
+
+</html>
