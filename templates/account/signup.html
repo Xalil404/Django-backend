@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block body_class %}login-page{% endblock body_class %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load socialaccount %}
+
+{% block head_title %}
+    {% trans "Sign Up" %}
+{% endblock head_title %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+
+        <!-- Left Column for Image -->
+
+        <div class="col-md-6 d-none d-md-block">
+            <img src="https://res.cloudinary.com/dnbbm9vzi/image/upload/v1726660993/Coder_Side_2_t8h1oq.png" class="img-fluid" alt="Login Image">
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center card-header-custom">
+                    <h2>{% trans "Sign Up to Djigggle" %}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'account_signup' %}">
+                        {% csrf_token %}
+                        
+                        <!-- Social Media Login Buttons -->
+                        <div class="social-login-buttons text-center mb-3">
+                            <a href="{% provider_login_url 'google' %}" type="button" class="btn btn-danger btn-block mb-4">
+                                <i class="fab fa-google"></i> {% trans "Login with Google" %}
+                            </a>
+                            <a href="{% provider_login_url 'github' %}" type="button" class="btn btn-dark btn-block mb-4">
+                                <i class="fab fa-github"></i> {% trans "Login with GitHub" %}
+                            </a>
+                        </div>
+
+
+                        <!-- Divider with text -->
+                        <div class="text-center mb-5">
+                            <div class="divider">
+                                <span class="divider-text">{% trans 'or sign up with email' %}</span>
+                            </div>
+                        </div>
+
+                        <!-- Continue with email button -->
+                        <div class="social-login-buttons text-center mb-3">
+                        <button type="button" class="btn btn-dark mx-auto d-block mb-3" id="email-button">
+                            {% trans "Continue with Email" %}
+                        </button>
+                        </div>
+
+                        <!-- Email registration fields (initially hidden) -->
+                        <div id="email-fields" style="display: none;">
+                            {{ form|crispy }}
+                            <button type="submit" class="btn btn-dark btn-lg mx-auto d-block" id="signup-button" style="display: none;">
+                                {% trans "Sign Up" %}
+                            </button>
+                        </div>
+
+                        {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+                        
+                    </form>
+                    <hr>
+                    <p class="text-center">
+                        {% trans "Already have an account?" %} <a href="{{ login_url }}" class="text-dark">{% trans "Sign in" %}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

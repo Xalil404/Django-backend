@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}
+    {% trans "Sign Out" %}
+{% endblock head_title %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Left Column for Image -->
+        <div class="col-md-6 d-none d-md-block">
+            <img src="https://res.cloudinary.com/dnbbm9vzi/image/upload/v1726666674/20_hggzzz.png" 
+                 class="img-fluid" 
+                 alt="Background Image" 
+                 style="width: 100%; height: auto;">
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center text-dark pt-5 card-logout">
+                    <h2 class="fw-bold">Sign Out</h2>
+                </div>
+                <div class="card-body text-center text-dark pb-5"> 
+                    <p>{% trans "Are you sure you want to sign out?" %}</p>
+                
+                    <form method="POST" action="{% url 'account_logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-lg me-4">{% trans "Sign Out" %}</button>
+                        <a href="javascript:history.back()" class="btn btn-dark ml-4 btn-lg">{% trans "Cancel" %}</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

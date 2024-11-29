@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block body_class %}login-page{% endblock body_class %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+{% load socialaccount %}
+
+
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+
+        <!-- Left Column for Image -->
+
+        <div class="col-md-6 d-none d-md-block">
+            <img src="https://res.cloudinary.com/dnbbm9vzi/image/upload/v1726659395/Coder_ISO_Back-2_2_ciqgxx.png" class="img-fluid" alt="Login Image">
+        </div>
+
+
+
+        <!-- Right Column for Login Form -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-center card-header-custom">
+                    <h2>{% trans "Sign In to Djigggle" %}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'account_login' %}">
+                        {% csrf_token %}
+
+                        <!-- Social Media Login Buttons -->
+                        <div class="social-login-buttons text-center mb-3">
+
+                            <a href="{% provider_login_url 'google' %}" type="button" class="btn btn-danger btn-block mb-4">
+                                <i class="fab fa-google"></i> {% trans "Login with Google" %}
+                            </a>
+                            <a href="{% provider_login_url 'github' %}" type="button" class="btn btn-dark btn-block mb-4">
+                                <i class="fab fa-github"></i> {% trans "Login with GitHub" %}
+                            </a>
+                        </div>
+
+                        <!-- Divider with text -->
+                        <div class="text-center mb-5">
+                            <div class="divider">
+                                <span class="divider-text">{% trans 'or sign in with email' %}</span>
+                            </div>
+                        </div>
+
+                        {{ form|crispy }}
+                        {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+                        <button type="submit" class="btn btn-dark btn-lg mx-auto d-block">{% trans "Sign In" %}</button>
+                    </form>
+                    <hr>
+                    <p class="text-center">
+                        <a href="{% url 'account_reset_password' %}" class="text-dark">{% trans "Forgot Password?" %}</a>
+                    </p>
+                    <p class="text-center">
+                        {% trans "Don't have an account?" %} <a href="{{ signup_url }}" class="text-dark">{% trans "Sign up" %}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
