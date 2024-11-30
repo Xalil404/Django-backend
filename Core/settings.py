@@ -56,7 +56,10 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'home',
+    'contactAPI',
     'drf_yasg', # To generate swagger & redo docs
+    'rest_framework',  # For Django REST Framework API URLs
+    'corsheaders', # To allow React app to communicate with Django backend
 ]
 
 SITE_ID = 1
@@ -106,6 +109,7 @@ AUTHENTICATION_BACKENDS = (
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -113,6 +117,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+]
+
+# CORS configuration
+CORS_ALLOW_ALL_ORIGINS = True  # For development
+
+# For production, restrict this to specific domains
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React local development server
+    "https://web-frontend-template-eta.vercel.app",  # Your deployed React app
 ]
 
 ROOT_URLCONF = 'Core.urls'
