@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'home',
     'contactAPI',
+    'profileAPI',
     'drf_yasg', # To generate swagger & redo docs
     'rest_framework',  # For Django REST Framework API URLs
     'corsheaders', # To allow React app to communicate with Django backend
@@ -111,6 +112,7 @@ AUTHENTICATION_BACKENDS = (
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',  # Token Authentication
+        'rest_framework.authentication.SessionAuthentication',  # Use session authentication for testing Profile API url
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # Permissions for authenticated users
