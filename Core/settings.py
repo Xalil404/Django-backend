@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap4',
     'home',
+    'drf_yasg', # To generate swagger & redo docs
 ]
 
 SITE_ID = 1
