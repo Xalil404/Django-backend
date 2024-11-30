@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     'drf_yasg', # To generate swagger & redo docs
     'rest_framework',  # For Django REST Framework API URLs
     'corsheaders', # To allow React app to communicate with Django backend
+    'dj_rest_auth', # Authentication for react app
+    'rest_framework.authtoken', # Authentication for react app
 ]
 
 SITE_ID = 1
@@ -104,6 +106,16 @@ AUTHENTICATION_BACKENDS = (
     # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # Token Authentication
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Permissions for authenticated users
+    ],
+}
 
 
 MIDDLEWARE = [
