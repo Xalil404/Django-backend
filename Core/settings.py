@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'home',
     'contactAPI',
     'profileAPI',
+    'tasksAPI',
     'drf_yasg', # To generate swagger & redo docs
     'rest_framework',  # For Django REST Framework API URLs
     'corsheaders', # To allow React app to communicate with Django backend
