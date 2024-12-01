@@ -139,7 +139,7 @@ CORS_ALLOW_ALL_ORIGINS = True  # For development
 # For production, restrict this to specific domains
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React local development server
-    "https://web-frontend-template-eta.vercel.app",  # Your deployed React app
+    'https://web-frontend-dun.vercel.app',  # Your deployed React app
 ]
 
 ROOT_URLCONF = 'Core.urls'
