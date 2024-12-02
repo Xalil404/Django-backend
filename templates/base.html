@@ -29,7 +29,8 @@
 
 </head>
 
-<body class="d-flex flex-column h-100 main-bg">
+<!--the template language is to hide the footer and header on all allauth templates-->
+<body class="d-flex flex-column h-100 main-bg {% block body_class %}base-template{% endblock body_class %}">
 
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light py-3 sticky-top">
