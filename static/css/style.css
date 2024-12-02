@@ -13,17 +13,3 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: 'Lato', sans-serif;
 }
-
-/* hide header and footer on sign up/login pages 
-.login-page .navbar,
-    .login-page footer {
-        display: none !important;
-}
-*/
-
-/* CSS to hide header and footer when the login-page class is present 
-body.login-page .navbar,
-body.login-page footer {
-    display: none !important;
-}
-*/
