@@ -29,12 +29,10 @@
 
 </head>
 
-
-<body class="d-flex flex-column h-100 main-bg">
+ <!--the template syntax is to hide the footer and header on all allauth templates-->
+<body class="d-flex flex-column h-100 main-bg {% block body_class %}base-template{% endblock body_class %}">
 
     <!-- Navigation -->
-    <!--the template if statement is to hide the footer and header on all allauth templates-->
-    {% if "login-page" not in body_class %}
     <nav class="navbar navbar-expand-lg navbar-light py-3 sticky-top">
         <div class="container-fluid">
             <!-- Include Mobile Navigation -->
@@ -44,7 +42,7 @@
             {% include "includes/main-nav.html" %}
         </div>
     </nav>
-    {% endif %}
+    
 
 
     <main class="flex-shrink-0 main-bg">
@@ -54,8 +52,6 @@
     </main>
 
     <!-- Footer -->
-    <!--the template if statement is to hide the footer and header on all allauth templates-->
-    {% if "login-page" not in body_class %}
     <footer class="mt-auto d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
         <a class="footer" href="{% url 'home' %}">
             <img src="https://res.cloudinary.com/dnbbm9vzi/image/upload/v1732111106/Screenshot_2024-11-20_at_1.57.54_PM-removebg-preview_q5y8br.png"
@@ -71,7 +67,7 @@
                         rel="Medium Privacy Policy">Link 2</a></li>
             </ul>
     </footer>
-    {% endif %}
+    
 
 </body>
 
