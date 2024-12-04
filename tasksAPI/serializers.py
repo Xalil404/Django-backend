@@ -6,6 +6,9 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'created_at', 'user']
+        extra_kwargs = {
+            'user': {'required': False},  # This will make the user field optional
+        }
     
     def create(self, validated_data):
         # Automatically set the user to the currently authenticated user
