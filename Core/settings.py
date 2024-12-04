@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'crispy_forms',
     'crispy_bootstrap4',
+    'Core',
     'home',
     'contactAPI',
     'profileAPI',
