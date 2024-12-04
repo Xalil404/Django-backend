@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'crispy_forms',
     'crispy_bootstrap4',
-    'Core',
+    'Core', # To customize admin panel & show user ID
     'home',
     'contactAPI',
     'profileAPI',
