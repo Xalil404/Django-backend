@@ -60,9 +60,9 @@ def google_auth_redirect(request):
         try:
             # Google token endpoint for exchanging the code for tokens
             token_url = "https://oauth2.googleapis.com/token"
-            client_id = "YOUR_GOOGLE_CLIENT_ID"
-            client_secret = "YOUR_GOOGLE_CLIENT_SECRET"
-            redirect_uri = "YOUR_REDIRECT_URI"
+            client_id = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
+            client_secret = "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"
+            redirect_uri = "http://localhost:3000/google-login-redirect"
 
             # Prepare the data for token exchange
             data = {
