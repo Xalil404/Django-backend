@@ -7,10 +7,8 @@ from django.http import JsonResponse
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 
-from google.auth.transport import requests as google_requests
 
-
-# views.py (for Pop-up Flow)
+# views.py (for Web Pop-up Flow)
 @csrf_exempt
 def google_auth(request):
     if request.method == 'POST':
@@ -45,41 +43,3 @@ def google_auth(request):
 
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
-
-
-# views.py (for Redirect Flow)
-@csrf_exempt
-def google_auth_redirect(request):
-    if request.method == 'POST':
-        try:
-            # Parse the token sent from the frontend (React)
-            body = json.loads(request.body)
-            token = body.get('token')  # Get the token sent from React
-
-            if not token:
-                return JsonResponse({'error': 'Token is missing'}, status=400)
-
-            # Verify the ID token with Google's public keys
-            client_id = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
-            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
-
-            # Get user information from the ID token
-            email = idinfo['email']
-            first_name = idinfo.get('given_name', '')
-            last_name = idinfo.get('family_name', '')
-
-            # Check if the user exists; if not, create a new one
-            user, created = User.objects.get_or_create(
-                email=email,
-                defaults={'username': email.split('@')[0], 'first_name': first_name, 'last_name': last_name}
-            )
-
-            # Create or get a token for the user
-            token, _ = Token.objects.get_or_create(user=user)
-
-            return JsonResponse({'token': token.key}, status=200)
-
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
