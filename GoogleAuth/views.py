@@ -50,40 +50,18 @@ def google_auth(request):
 # views.py (for Redirect Flow)
 @csrf_exempt
 def google_auth_redirect(request):
-    if request.method == 'GET':
-        # The code that Google sends as a query parameter after redirection
-        code = request.GET.get('code')
-        if not code:
-            return JsonResponse({'error': 'Authorization code is missing'}, status=400)
-
-        # Exchange the code for an access token and ID token
+    if request.method == 'POST':
         try:
-            # Google token endpoint for exchanging the code for tokens
-            token_url = "https://oauth2.googleapis.com/token"
+            # Parse the token sent from the frontend (React)
+            body = json.loads(request.body)
+            token = body.get('token')  # Get the token sent from React
+
+            if not token:
+                return JsonResponse({'error': 'Token is missing'}, status=400)
+
+            # Verify the ID token with Google's public keys
             client_id = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
-            client_secret = "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"
-            redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/google-redirect/"
-
-            # Prepare the data for token exchange
-            data = {
-                'code': code,
-                'client_id': client_id,
-                'client_secret': client_secret,
-                'redirect_uri': redirect_uri,
-                'grant_type': 'authorization_code',
-            }
-
-            # Make the POST request to exchange the code for a token
-            response = requests.post(token_url, data=data)
-            response_data = response.json()
-
-            if 'id_token' not in response_data:
-                return JsonResponse({'error': 'Failed to obtain ID token'}, status=400)
-
-            id_token_str = response_data['id_token']
-
-            # Verify the ID token
-            idinfo = id_token.verify_oauth2_token(id_token_str, google_requests.Request(), client_id)
+            idinfo = id_token.verify_oauth2_token(token, google_requests.Request(), client_id)
 
             # Get user information from the ID token
             email = idinfo['email']
@@ -104,4 +82,4 @@ def google_auth_redirect(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
-    return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
+    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
