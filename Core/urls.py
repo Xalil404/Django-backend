@@ -22,7 +22,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 #For Google authentication
-from GoogleAuth.views import google_auth
+#from GoogleAuth.views import google_auth
 
 
 # REST API Documentation
@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/', include('tasksAPI.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api/auth/google/', google_auth, name='google-auth'),
+    #path('api/auth/google/', google_auth, name='google-auth'),
+    path('api/auth/', include('GoogleAuth.urls')),
 ]
 handler404 = 'Core.views.handler404'
