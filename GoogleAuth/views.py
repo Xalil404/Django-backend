@@ -62,7 +62,7 @@ def google_auth_redirect(request):
             token_url = "https://oauth2.googleapis.com/token"
             client_id = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
             client_secret = "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"
-            redirect_uri = "http://localhost:3000/google-login-redirect"
+            redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/google-redirect/"
 
             # Prepare the data for token exchange
             data = {
