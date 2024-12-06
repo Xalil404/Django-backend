@@ -100,8 +100,15 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         }
+    },
+    'apple': {
+        'CLIENT_ID': os.environ.get('APPLE_CLIENT_ID', 'com.template.applicationproject'),  # Default to your client ID
+        'SECRET_KEY': os.environ.get('APPLE_AUTH_KEY_PATH', str(BASE_DIR / 'private_keys' / 'AuthKey_866S5JW2TH.p8')),  # Make sure the path is correct
+        'TEAM_ID': os.environ.get('APPLE_TEAM_ID', 'TGGQFAW4Y5'),  # Default to your Team ID
+        'KEY_ID': os.environ.get('APPLE_KEY_ID', '866S5JW2TH'),  # Default to your Key ID
     }
 }
+
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

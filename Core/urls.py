@@ -23,7 +23,8 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 #For Google authentication
 from GoogleAuth.views import google_auth
-
+#For Apple authentication
+from AppleAuth.views import apple_auth_web
 
 # REST API Documentation
 schema_view = get_schema_view(
@@ -52,5 +53,6 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/auth/google/', google_auth, name='google-auth'),
+    path('api/auth/apple/web/', apple_auth_web, name='apple-auth-web'),
 ]
 handler404 = 'Core.views.handler404'
