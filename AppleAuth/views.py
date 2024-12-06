@@ -57,7 +57,7 @@ def decode_apple_token(token, apple_public_keys):
     if key is None:
         raise ValueError("Public key not found")
     public_key = jwt.algorithms.RSAAlgorithm.from_jwk(key)
-    decoded_token = jwt.decode(token, public_key, algorithms=['RS256'], audience=settings.com.template.applicationproject, options={"verify_exp": True})
+    decoded_token = jwt.decode(token, public_key, algorithms=['RS256'], audience=settings.com.template.applicationwebproject, options={"verify_exp": True})
 
     if decoded_token.get('iss') != 'https://appleid.apple.com':
         raise ValueError("Invalid issuer")
