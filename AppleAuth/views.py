@@ -63,7 +63,7 @@ def decode_apple_token(token, apple_public_keys):
         raise ValueError("Invalid issuer")
 
     return decoded_token
-
+'''
 def create_or_update_user(email, user_id, decoded_token):
     user = User.objects.filter(email=email).first()
 
@@ -79,3 +79,26 @@ def create_or_update_user(email, user_id, decoded_token):
     user.save()
 
     return user, False  # Return user and False if the user is not newly created
+'''
+
+def create_or_update_user(email, user_id, decoded_token):
+    # Check if the user already exists using either the email or user_id (sub)
+    user = User.objects.filter(email=email).first()
+
+    if not user:
+        # Create a new user if not found
+        user = User.objects.create_user(
+            username=email,  # You can use the email or generate a unique username
+            email=email,
+            password=None  # Apple does not send a password
+        )
+    
+    # Update the user with information from the decoded token
+    user.first_name = decoded_token.get('given_name', '')
+    user.last_name = decoded_token.get('family_name', '')
+    
+    # Optionally, store the Apple user ID (sub) in the user model for future reference
+    user.profile.apple_user_id = user_id  # Assuming you have a custom user profile model
+    user.save()
+
+    return user, False  # Returning user and False to indicate we didn't create the user again
