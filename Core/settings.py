@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'profileAPI',
     'tasksAPI',
     'GoogleAuth',
+    'AppleAuth',
     'drf_yasg', # To generate swagger & redo docs
     'rest_framework',  # For Django REST Framework API URLs
     'corsheaders', # To allow React app to communicate with Django backend
@@ -108,6 +109,8 @@ SOCIALACCOUNT_PROVIDERS = {
         'KEY_ID': os.environ.get('APPLE_KEY_ID', '866S5JW2TH'),  # Default to your Key ID
     }
 }
+
+APPLE_CLIENT_ID = os.environ.get('APPLE_CLIENT_ID', 'com.template.applicationproject')
 
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
