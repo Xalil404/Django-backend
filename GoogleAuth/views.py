@@ -45,7 +45,7 @@ def google_auth(request):
 
 
 
-# Redirect Flow
+# (for Web Pop-up Flow)
 @csrf_exempt
 def google_auth_redirect(request):
     if request.method == 'POST':
