@@ -65,20 +65,19 @@ def google_auth_redirect(request):
         try:
             # Verify the token with Google
             idinfo = id_token.verify_oauth2_token(
-                token,
-                Request(),
-                settings.GOOGLE_CLIENT_ID
+                token, 
+                requests.Request(), 
+                "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"  # Replace with your actual Google Client ID
             )
-
             email = idinfo['email']
             first_name = idinfo.get('given_name', '')
             last_name = idinfo.get('family_name', '')
 
-            # Check if the user exists, otherwise create a new one
+            # Check if user exists; if not, create a new one
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
-                    'username': email.split('@')[0],  # Use email prefix as username
+                    'username': email.split('@')[0],
                     'first_name': first_name,
                     'last_name': last_name,
                 }
@@ -87,6 +86,7 @@ def google_auth_redirect(request):
             # Create or get a token for the user
             token, _ = Token.objects.get_or_create(user=user)
 
+            # Send back the token as response
             return JsonResponse({'token': token.key}, status=200)
 
         except ValueError:
