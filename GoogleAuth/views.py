@@ -56,7 +56,7 @@ def google_auth(request):
 # (for Web Redirect Flow)
 # Set up logging
 logger = logging.getLogger(__name__)
-
+'''
 @csrf_exempt
 def google_auth_redirect(request):
     if request.method == 'POST':
@@ -102,10 +102,8 @@ def google_auth_redirect(request):
             user_token, _ = Token.objects.get_or_create(user=user)
             logger.info(f"Token for user: {user_token.key}")
 
-            return redirect('/dashboard')
-
             # Return the token to the frontend (debugging line)
-            # return JsonResponse({'token': user_token.key}, status=200)
+            return JsonResponse({'token': user_token.key}, status=200)
 
         except ValueError as e:
             # Handle invalid token errors
@@ -114,6 +112,67 @@ def google_auth_redirect(request):
 
         except Exception as e:
             # Handle unexpected exceptions
+            logger.exception("An unexpected error occurred")
+            return JsonResponse({'error': 'Something went wrong', 'details': str(e)}, status=500)
+
+    # Handle non-POST requests
+    logger.warning("Non-POST method used for Google Redirect")
+    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+'''
+
+@csrf_exempt
+def google_auth_redirect(request):
+    if request.method == 'POST':
+        try:
+            logger.info("Received Google Redirect request")
+            
+            # Parse the request body
+            body = json.loads(request.body)
+            token = body.get('token')
+            logger.info(f"Token received: {token}")
+
+            if not token:
+                logger.error("Token not provided in request")
+                return JsonResponse({'error': 'Token not provided'}, status=400)
+
+            # Verify the Google ID token
+            google_request = Request()  # Instantiate the Request object
+            CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
+            idinfo = id_token.verify_oauth2_token(token, google_request, CLIENT_ID)
+            logger.info(f"ID Token verified successfully: {idinfo}")
+
+            # Extract user information from the token
+            email = idinfo.get('email')
+            first_name = idinfo.get('given_name', '')
+            last_name = idinfo.get('family_name', '')
+
+            if not email:
+                logger.error("Email not available in token")
+                return JsonResponse({'error': 'Email not available in token'}, status=400)
+
+            # Check if the user exists, or create a new one
+            user, created = User.objects.get_or_create(
+                email=email,
+                defaults={
+                    'username': email.split('@')[0],
+                    'first_name': first_name,
+                    'last_name': last_name,
+                }
+            )
+            logger.info(f"User {'created' if created else 'retrieved'}: {user}")
+
+            # Generate or retrieve the user's token
+            user_token, _ = Token.objects.get_or_create(user=user)
+            logger.info(f"Token for user: {user_token.key}")
+
+            # Return the token to the frontend (for frontend handling)
+            return JsonResponse({'redirect': '/dashboard'}, status=200)
+
+        except ValueError as e:
+            logger.error(f"Invalid token: {e}")
+            return JsonResponse({'error': 'Invalid token', 'details': str(e)}, status=400)
+
+        except Exception as e:
             logger.exception("An unexpected error occurred")
             return JsonResponse({'error': 'Something went wrong', 'details': str(e)}, status=500)
 
