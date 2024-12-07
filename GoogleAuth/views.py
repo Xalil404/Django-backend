@@ -73,7 +73,7 @@ def google_auth_redirect(request):
                 return JsonResponse({'error': 'Token not provided'}, status=400)
 
             # Verify the Google ID token
-            google_request = requests.Request()
+            google_request = Request()  # Instantiate the Request object
             CLIENT_ID = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"  # Replace with your actual Google Client ID
             idinfo = id_token.verify_oauth2_token(token, google_request, CLIENT_ID)
             logger.info(f"ID Token verified successfully: {idinfo}")
