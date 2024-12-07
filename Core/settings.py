@@ -177,6 +177,17 @@ CORS_ALLOWED_ORIGINS = [
     'https://web-frontend-dun.vercel.app',  # Your deployed React app
 ]
 
+# When your frontend and backend are hosted on different domains (e.g., 
+# frontend on Vercel and backend on Heroku or localhost), browsers enforce 
+# the Same-Origin Policy. This policy restricts how scripts from one origin 
+# can interact with resources on another origin. For security, Django includes 
+# CSRF protection by default, which checks whether the request comes from a trusted domain
+CSRF_TRUSTED_ORIGINS = [
+    "https://web-frontend-dun.vercel.app",  # Replace with your frontend's actual domain
+    "https://backend-django-9c363a145383.herokuapp.com/",  # Replace with your backend's actual domain (if necessary)
+]
+
+
 ROOT_URLCONF = 'Core.urls'
 
 TEMPLATES = [
