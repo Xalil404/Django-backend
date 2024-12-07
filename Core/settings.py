@@ -168,6 +168,19 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
+
+# These settings are related to Cross-Origin Resource Sharing (CORS) and 
+# secure cookie handling, and they play a crucial role when your frontend 
+# and backend are hosted on different domains (which is the case for your setup)
+
+# This setting allows the browser to send cookies and credentials (like authentication tokens)
+CORS_ALLOW_CREDENTIALS = True
+# This setting ensures that session cookies are only sent over HTTPS connections
+SESSION_COOKIE_SECURE = True
+# This setting ensures that the CSRF cookie is only sent over HTTPS connections, similar to SESSION_COOKIE_SECURE
+CSRF_COOKIE_SECURE = True
+
+
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = True  # For development
 
