@@ -113,10 +113,8 @@ SOCIALACCOUNT_PROVIDERS = {
 APPLE_CLIENT_ID = os.environ.get('APPLE_CLIENT_ID', 'com.template.applicationwebproject')
 
 # Top one is for web & second one is for mobile
-GOOGLE_CLIENT_IDS = [
-    '26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com'
-    ''
-] 
+GOOGLE_CLIENT_ID = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
+
 
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
