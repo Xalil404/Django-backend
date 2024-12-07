@@ -102,8 +102,10 @@ def google_auth_redirect(request):
             user_token, _ = Token.objects.get_or_create(user=user)
             logger.info(f"Token for user: {user_token.key}")
 
-            # Return the token to the frontend
-            return JsonResponse({'token': user_token.key}, status=200)
+            return redirect('/dashboard')
+
+            # Return the token to the frontend (debugging line)
+            # return JsonResponse({'token': user_token.key}, status=200)
 
         except ValueError as e:
             # Handle invalid token errors
