@@ -137,7 +137,7 @@ def google_auth_redirect(request):
 
             # Verify the Google ID token
             google_request = Request()  # Instantiate the Request object
-            CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"
+            CLIENT_ID = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
             idinfo = id_token.verify_oauth2_token(token, google_request, CLIENT_ID)
             logger.info(f"ID Token verified successfully: {idinfo}")
 
