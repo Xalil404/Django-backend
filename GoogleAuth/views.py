@@ -22,6 +22,9 @@ from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
+import logging
+
+logger = logging.getLogger(__name__)
 
 @csrf_exempt
 def google_auth(request):
@@ -101,7 +104,7 @@ def google_auth(request):
 
 # (for Web Redirect Flow - this code below is for debugging and getting the proper token)
 # Set up logging to log error messages
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 '''
 @csrf_exempt
 def google_auth_redirect(request):
