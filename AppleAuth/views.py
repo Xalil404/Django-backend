@@ -2,35 +2,34 @@ import json
 import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from jose import jwt
+from jose import jwt, jwk
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-
 import requests
 from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
-
 APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
 
 def fetch_apple_public_key():
-    """
-    Fetch and cache Apple's public key for verifying JWT tokens.
-    """
-    cached_key = cache.get("apple_public_key")
-    if cached_key:
-        return cached_key
+    cached_keys = cache.get("apple_public_key")
+    if cached_keys:
+        return cached_keys
 
     response = requests.get(APPLE_KEYS_URL)
     if response.status_code == 200:
         keys = response.json().get("keys")
-        # Cache the public key for 24 hours (86400 seconds)
         cache.set("apple_public_key", keys, timeout=86400)
         return keys
     return None
 
+def get_key_for_kid(kid, keys):
+    for key in keys:
+        if key["kid"] == kid:
+            return key
+    return None
 
 @csrf_exempt
 def apple_auth_web(request):
@@ -42,24 +41,30 @@ def apple_auth_web(request):
         token = body.get('token')
 
         if not token:
-            logger.error("Token is missing from the request body.")
             return JsonResponse({'error': 'Token is missing'}, status=400)
 
         # Fetch Apple's public key
         public_keys = fetch_apple_public_key()
         if not public_keys:
             return JsonResponse({'error': 'Could not fetch Apple public key'}, status=500)
-            
+
         # Decode and validate the token
+        header = jwt.get_unverified_header(token)
+        key = get_key_for_kid(header['kid'], public_keys)
+
+        if not key:
+            logger.error("No matching key found for the token.")
+            return JsonResponse({'error': 'Invalid token'}, status=400)
+
+        public_key = jwk.construct(key)
         decoded_token = jwt.decode(
             token,
-            settings.APPLE_PUBLIC_KEY,  # Replace with the public key for Apple Sign-In
+            public_key.to_pem(),
             algorithms=['RS256'],
             audience=settings.APPLE_CLIENT_ID
         )
-        logger.info(f"Decoded token: {decoded_token}")
 
-        # Use `sub` (unique user identifier) as the username
+        # Extract user info
         apple_user_id = decoded_token['sub']
         email = decoded_token.get('email', '')
 
@@ -71,11 +76,9 @@ def apple_auth_web(request):
         # Generate an auth token for the user
         token, _ = Token.objects.get_or_create(user=user)
 
-        logger.info(f"Authentication successful for user: {user.username}")
-        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})  # Redirect to the appropriate page
+        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
 
     except jwt.ExpiredSignatureError:
-        logger.error("The token has expired.")
         return JsonResponse({'error': 'Token has expired'}, status=401)
     except jwt.JWTError as e:
         logger.error(f"Token validation error: {str(e)}")
