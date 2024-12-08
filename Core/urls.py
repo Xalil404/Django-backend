@@ -24,7 +24,7 @@ from drf_yasg import openapi
 #For Google authentication
 from GoogleAuth.views import google_auth, google_auth_redirect
 #For Apple authentication
-from AppleAuth.views import apple_auth_web, apple_auth_web_redirect,
+from AppleAuth.views import apple_auth_web, apple_auth_web_redirect
 
 # REST API Documentation
 schema_view = get_schema_view(
