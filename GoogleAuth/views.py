@@ -53,8 +53,8 @@ def google_auth(request):
 
 
 
-# (for Web Redirect Flow)
-# Set up logging
+# (for Web Redirect Flow - this is for debugging and getting the proper token)
+# Set up logging to log error messages
 logger = logging.getLogger(__name__)
 '''
 @csrf_exempt
@@ -166,7 +166,9 @@ def google_auth_redirect(request):
             logger.info(f"Token for user: {user_token.key}")
 
             # Return the token to the frontend (for frontend handling)
-            return JsonResponse({'redirect': '/dashboard'}, status=200)
+            return JsonResponse({'token': user_token.key, 'redirect': '/dashboard'}, status=200)
+
+            #return JsonResponse({'redirect': '/dashboard'}, status=200)
 
         except ValueError as e:
             logger.error(f"Invalid token: {e}")
