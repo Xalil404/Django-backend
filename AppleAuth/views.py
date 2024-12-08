@@ -10,7 +10,6 @@ import logging
 
 
 logger = logging.getLogger(__name__)
-logger.info(f"Received body: {request.body.decode('utf-8')}")
 
 
 # Apple's public keys URL
