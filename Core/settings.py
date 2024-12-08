@@ -180,7 +180,7 @@ CSRF_COOKIE_SECURE = True
 
 
 # CORS configuration
-CORS_ALLOW_ALL_ORIGINS = False  # True For development
+CORS_ALLOW_ALL_ORIGINS = True  # True For development
 
 # CSRF trusted origins
 CSRF_TRUSTED_ORIGINS = [

@@ -8,7 +8,10 @@ from django.conf import settings
 from rest_framework.authtoken.models import Token
 import logging
 
+
 logger = logging.getLogger(__name__)
+logger.info(f"Received body: {request.body.decode('utf-8')}")
+
 
 # Apple's public keys URL
 APPLE_PUBLIC_KEYS_URL = "https://appleid.apple.com/auth/keys"
