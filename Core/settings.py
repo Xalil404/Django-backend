@@ -182,6 +182,12 @@ CSRF_COOKIE_SECURE = True
 # CORS configuration
 CORS_ALLOW_ALL_ORIGINS = True  # For development
 
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://web-frontend-dun.vercel.app",
+]
+
 # For production, restrict this to specific domains
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React local development server
