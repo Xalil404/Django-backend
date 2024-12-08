@@ -1,11 +1,11 @@
 import json
+import logging
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from jose import jwt  # Use python-jose to verify JWT
+from jose import jwt
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -13,36 +13,48 @@ logger = logging.getLogger(__name__)
 def apple_auth_web(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
-    
-    # Handle the POST request
-    body = json.loads(request.body.decode('utf-8'))
-    id_token = body.get('token')
-    if not id_token:
-        return JsonResponse({'error': 'id_token is missing'}, status=400)
-    
-    # Proceed with token validation and user creation/authentication
+
     try:
-        # Replace the client_id and team_id with your credentials
+        body = json.loads(request.body.decode('utf-8'))
+        token = body.get('token')
+
+        if not token:
+            logger.error("Token is missing from the request body.")
+            return JsonResponse({'error': 'Token is missing'}, status=400)
+
+        # Decode and validate the token
         decoded_token = jwt.decode(
-            id_token,
-            settings.APPLE_PUBLIC_KEY,
+            token,
+            settings.APPLE_PUBLIC_KEY,  # Replace with the public key for Apple Sign-In
             algorithms=['RS256'],
             audience=settings.APPLE_CLIENT_ID
         )
-        email = decoded_token.get('email')
-        if not email:
-            return JsonResponse({'error': 'Email not found in token'}, status=400)
-        
-        # Create or get user logic
-        user, created = User.objects.get_or_create(username=email, defaults={'email': email})
+        logger.info(f"Decoded token: {decoded_token}")
+
+        # Use `sub` (unique user identifier) as the username
+        apple_user_id = decoded_token['sub']
+        email = decoded_token.get('email', '')
+
+        # Get or create the user
+        user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
+        if created:
+            logger.info(f"Created new user: {user.username}")
+
+        # Generate an auth token for the user
         token, _ = Token.objects.get_or_create(user=user)
 
-        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'}, status=200)
+        logger.info(f"Authentication successful for user: {user.username}")
+        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})  # Redirect to the appropriate page
 
     except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Token expired'}, status=401)
+        logger.error("The token has expired.")
+        return JsonResponse({'error': 'Token has expired'}, status=401)
     except jwt.JWTError as e:
-        return JsonResponse({'error': f'Invalid token: {str(e)}'}, status=400)
+        logger.error(f"Token validation error: {str(e)}")
+        return JsonResponse({'error': 'Invalid token'}, status=400)
+    except Exception as e:
+        logger.error(f"Unhandled error: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
 
