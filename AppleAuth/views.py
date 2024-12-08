@@ -7,7 +7,30 @@ from django.conf import settings
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 
+import requests
+from django.core.cache import cache
+
 logger = logging.getLogger(__name__)
+
+
+APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
+
+def fetch_apple_public_key():
+    """
+    Fetch and cache Apple's public key for verifying JWT tokens.
+    """
+    cached_key = cache.get("apple_public_key")
+    if cached_key:
+        return cached_key
+
+    response = requests.get(APPLE_KEYS_URL)
+    if response.status_code == 200:
+        keys = response.json().get("keys")
+        # Cache the public key for 24 hours (86400 seconds)
+        cache.set("apple_public_key", keys, timeout=86400)
+        return keys
+    return None
+
 
 @csrf_exempt
 def apple_auth_web(request):
