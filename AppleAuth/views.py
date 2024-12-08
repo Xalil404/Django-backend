@@ -45,6 +45,11 @@ def apple_auth_web(request):
             logger.error("Token is missing from the request body.")
             return JsonResponse({'error': 'Token is missing'}, status=400)
 
+        # Fetch Apple's public key
+        public_keys = fetch_apple_public_key()
+        if not public_keys:
+            return JsonResponse({'error': 'Could not fetch Apple public key'}, status=500)
+            
         # Decode and validate the token
         decoded_token = jwt.decode(
             token,
