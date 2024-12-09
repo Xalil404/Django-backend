@@ -15,6 +15,12 @@ import jwt
 import requests
 import datetime
 
+# Access Apple authentication configuration
+client_id = settings.APPLE_CONFIG['CLIENT_ID']
+secret_key = settings.APPLE_CONFIG['SECRET_KEY']
+team_id = settings.APPLE_CONFIG['TEAM_ID']
+key_id = settings.APPLE_CONFIG['KEY_ID']
+
 logger = logging.getLogger(__name__)
 
 APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
