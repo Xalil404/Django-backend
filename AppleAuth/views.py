@@ -93,6 +93,24 @@ def apple_auth_web(request):
 
 
 
+
+
+
+# Handle the POST request from Apple and redirect to React
+def apple_auth_web_callback(request):
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        state = request.POST.get('state')
+
+        if not code:
+            return JsonResponse({'error': 'Authorization code missing'}, status=400)
+
+        # Redirect to React with the authorization code in the query string
+        return redirect(f"https://web-frontend-dun.vercel.app/auth/callback?code={code}&state={state}")
+    else:
+        return JsonResponse({'error': 'Method Not Allowed'}, status=405)
+
+
 # Apple Web Redirect authentication
 def apple_auth_web_redirect(request):
     # Retrieve the authorization code and state from the request
