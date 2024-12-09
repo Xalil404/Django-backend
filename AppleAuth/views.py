@@ -136,7 +136,7 @@ def apple_auth_web_callback(request):
     # Exchange code for tokens
     token_url = "https://appleid.apple.com/auth/token"
     client_id = "com.template.applicationwebproject"
-    client_secret = settings.APPLE_CLIENT_SECRET
+    client_secret = settings.apple['SECRET_KEY']
     redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/apple/callback"
 
     data = {
