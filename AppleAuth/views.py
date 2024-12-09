@@ -108,82 +108,43 @@ def apple_auth_web(request):
 
 # Web redirect view
 # Fetch the Apple public key
-def fetch_apple_public_key():
-    cached_keys = cache.get("apple_public_key")
-    if cached_keys:
-        return cached_keys
-
-    response = requests.get(APPLE_KEYS_URL)
-    if response.status_code == 200:
-        keys = response.json().get("keys")
-        cache.set("apple_public_key", keys, timeout=86400)
-        return keys
-    return None
-
-def get_key_for_kid(kid, keys):
-    for key in keys:
-        if key["kid"] == kid:
-            return key
-    return None
-
-# Generate Apple client secret using your private key
-def generate_apple_client_secret():
-    private_key = open(settings.APPLE_AUTH_KEY_PATH, 'r').read()
-
-    headers = {
-        'kid': settings.APPLE_KEY_ID,
-        'typ': 'JWT',
-    }
-    
-    payload = {
-        'iss': settings.APPLE_TEAM_ID,
-        'iat': datetime.datetime.utcnow(),
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=180),
-        'aud': 'https://appleid.apple.com',
-        'sub': settings.APPLE_CLIENT_ID,
-    }
-
-    client_secret = jwt.encode(payload, private_key, algorithm='ES256', headers=headers)
-    return client_secret
-
-# Apple Redirect Authentication
 @csrf_exempt
 def apple_auth_redirect(request):
-    if request.method != 'GET':
-        return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
     try:
-        # Step 1: Extract the authorization code from the GET request
-        code = request.GET.get('code')
+        body = json.loads(request.body.decode('utf-8'))
+        code = body.get('code')
+
         if not code:
             return JsonResponse({'error': 'Authorization code is missing'}, status=400)
 
-        # Step 2: Generate client secret for Apple
-        client_secret = generate_apple_client_secret()
+        client_id = settings.APPLE_CLIENT_ID
+        client_secret = settings.APPLE_CLIENT_SECRET
+        redirect_uri = settings.APPLE_REDIRECT_URI
 
-        # Step 3: Exchange authorization code for access token and ID token
-        response = requests.post(APPLE_TOKEN_URL, data={
-            'client_id': settings.APPLE_CLIENT_ID,
+        token_data = {
+            'client_id': client_id,
             'client_secret': client_secret,
             'code': code,
             'grant_type': 'authorization_code',
-            'redirect_uri': settings.APPLE_REDIRECT_URI,
-        })
+            'redirect_uri': redirect_uri,
+        }
 
-        if response.status_code != 200:
-            return JsonResponse({'error': 'Failed to exchange authorization code for tokens'}, status=500)
+        token_response = requests.post(APPLE_TOKEN_URL, data=token_data)
+        if token_response.status_code != 200:
+            return JsonResponse({'error': 'Failed to get token from Apple'}, status=400)
 
-        tokens = response.json()
-        id_token = tokens.get('id_token')
+        token_response_data = token_response.json()
+        id_token = token_response_data['id_token']
 
-        if not id_token:
-            return JsonResponse({'error': 'ID Token missing in response'}, status=400)
-
-        # Step 4: Verify and decode the ID token
+        # Fetch Apple's public key
         public_keys = fetch_apple_public_key()
         if not public_keys:
             return JsonResponse({'error': 'Could not fetch Apple public key'}, status=500)
 
+        # Decode and validate the token
         header = jwt.get_unverified_header(id_token)
         key = get_key_for_kid(header['kid'], public_keys)
 
@@ -196,22 +157,21 @@ def apple_auth_redirect(request):
             id_token,
             public_key.to_pem(),
             algorithms=['RS256'],
-            audience=settings.APPLE_CLIENT_ID
+            audience=client_id
         )
 
-        # Step 5: Extract user information from decoded token
+        # Extract user info
         apple_user_id = decoded_token['sub']
         email = decoded_token.get('email', '')
 
-        # Step 6: Get or create the user in the system
+        # Get or create the user
         user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
         if created:
             logger.info(f"Created new user: {user.username}")
 
-        # Step 7: Generate an authentication token for the user
+        # Generate an auth token for the user
         token, _ = Token.objects.get_or_create(user=user)
 
-        # Step 8: Return the response with the token and redirect URL
         return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
 
     except jwt.ExpiredSignatureError:
@@ -222,7 +182,6 @@ def apple_auth_redirect(request):
     except Exception as e:
         logger.error(f"Unhandled error: {str(e)}")
         return JsonResponse({'error': 'Internal server error'}, status=500)
-
 
 
 
