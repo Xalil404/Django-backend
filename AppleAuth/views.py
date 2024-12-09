@@ -150,8 +150,11 @@ def apple_auth_web_callback(request):
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     response = requests.post(token_url, data=data, headers=headers)
 
+    # Log the response details
+    logger.error(f"Apple token exchange response: {response.status_code} - {response.text}")
+
     if response.status_code != 200:
-        return JsonResponse({"error": "Failed to retrieve token from Apple"}, status=500)
+        return JsonResponse({"error": "Failed to retrieve token from Apple", "details": response.json()}, status=500)
 
     response_data = response.json()
     id_token = response_data.get("id_token")
@@ -177,6 +180,7 @@ def apple_auth_web_callback(request):
     # Redirect to the React app with the authentication completed
     frontend_dashboard_url = f"https://web-frontend-dun.vercel.app/dashboard"
     return redirect(f"{frontend_dashboard_url}?token={user_token}")
+
 
 
 
