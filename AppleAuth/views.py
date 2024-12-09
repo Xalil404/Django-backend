@@ -149,19 +149,19 @@ def generate_apple_client_secret():
 # Apple Redirect Authentication
 @csrf_exempt
 def apple_auth_redirect(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
 
     try:
-        body = json.loads(request.body.decode('utf-8'))
-        code = body.get('code')  # Get authorization code from request
+        # Step 1: Extract the authorization code from the GET request
+        code = request.GET.get('code')
         if not code:
             return JsonResponse({'error': 'Authorization code is missing'}, status=400)
 
-        # Step 1: Generate client secret for Apple
+        # Step 2: Generate client secret for Apple
         client_secret = generate_apple_client_secret()
 
-        # Step 2: Exchange authorization code for access token and ID token
+        # Step 3: Exchange authorization code for access token and ID token
         response = requests.post(APPLE_TOKEN_URL, data={
             'client_id': settings.APPLE_CLIENT_ID,
             'client_secret': client_secret,
@@ -179,7 +179,7 @@ def apple_auth_redirect(request):
         if not id_token:
             return JsonResponse({'error': 'ID Token missing in response'}, status=400)
 
-        # Step 3: Verify and decode the ID token
+        # Step 4: Verify and decode the ID token
         public_keys = fetch_apple_public_key()
         if not public_keys:
             return JsonResponse({'error': 'Could not fetch Apple public key'}, status=500)
@@ -199,19 +199,19 @@ def apple_auth_redirect(request):
             audience=settings.APPLE_CLIENT_ID
         )
 
-        # Step 4: Extract user information from decoded token
+        # Step 5: Extract user information from decoded token
         apple_user_id = decoded_token['sub']
         email = decoded_token.get('email', '')
 
-        # Step 5: Get or create the user in the system
+        # Step 6: Get or create the user in the system
         user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
         if created:
             logger.info(f"Created new user: {user.username}")
 
-        # Step 6: Generate an authentication token for the user
+        # Step 7: Generate an authentication token for the user
         token, _ = Token.objects.get_or_create(user=user)
 
-        # Step 7: Return the response with the token and redirect URL
+        # Step 8: Return the response with the token and redirect URL
         return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
 
     except jwt.ExpiredSignatureError:
@@ -222,6 +222,7 @@ def apple_auth_redirect(request):
     except Exception as e:
         logger.error(f"Unhandled error: {str(e)}")
         return JsonResponse({'error': 'Internal server error'}, status=500)
+
 
 
 
