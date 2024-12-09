@@ -110,13 +110,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-apple = {
-    'CLIENT_ID': os.environ.get('APPLE_CLIENT_ID', 'com.template.applicationwebproject'),  # Default to your client ID
-    'SECRET_KEY': os.environ.get('APPLE_AUTH_KEY_PATH', str(BASE_DIR / 'private_keys' / 'AuthKey_866S5JW2TH.p8')),  # Ensure this path is correct
-    'TEAM_ID': os.environ.get('APPLE_TEAM_ID', 'TGGQFAW4Y5'),  # Default to your Team ID
-    'KEY_ID': os.environ.get('APPLE_KEY_ID', '866S5JW2TH'),  # Default to your Key ID
-}
-
 
 APPLE_CLIENT_ID = 'com.template.applicationwebproject'
 

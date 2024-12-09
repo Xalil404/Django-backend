@@ -15,11 +15,6 @@ import jwt
 import requests
 import datetime
 
-# Access Apple authentication configuration
-client_id = settings.APPLE_CONFIG['CLIENT_ID']
-secret_key = settings.APPLE_CONFIG['SECRET_KEY']
-team_id = settings.APPLE_CONFIG['TEAM_ID']
-key_id = settings.APPLE_CONFIG['KEY_ID']
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +137,7 @@ def apple_auth_web_callback(request):
     # Exchange code for tokens
     token_url = "https://appleid.apple.com/auth/token"
     client_id = "com.template.applicationwebproject"
-    client_secret = settings.apple['SECRET_KEY']
+    client_secret = settings.SOCIALACCOUNT_PROVIDERS['apple']['SECRET_KEY']
     redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/apple/callback"
 
     data = {
