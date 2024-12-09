@@ -1,6 +1,6 @@
 import json
 import logging
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from jose import jwt, jwk
 from django.conf import settings
@@ -11,6 +11,9 @@ from django.core.cache import cache
 
 # For redirect authentication
 from django.shortcuts import redirect
+import jwt
+import requests
+import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -96,92 +99,81 @@ def apple_auth_web(request):
 
 
 
-# Handle the POST request from Apple and redirect to React
-def apple_auth_web_callback(request):
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        state = request.POST.get('state')
-
-        if not code:
-            return JsonResponse({'error': 'Authorization code missing'}, status=400)
-
-        # Redirect to React with the authorization code in the query string
-        return redirect(f"https://web-frontend-dun.vercel.app/auth/callback?code={code}&state={state}")
-    else:
-        return JsonResponse({'error': 'Method Not Allowed'}, status=405)
 
 
-# Apple Web Redirect authentication
+
+# Web redirect view
 def apple_auth_web_redirect(request):
-    # Retrieve the authorization code and state from the request
-    code = request.GET.get('code')  # Apple's authorization code
-    state = request.GET.get('state')  # Optional: used for CSRF protection, if you used it
-    error = request.GET.get('error')  # Error if something went wrong
+    """
+    Initiates Apple Sign-In (Step 1).
+    """
+    client_id = "com.template.applicationwebproject"
+    redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/apple/callback"
+    state = "state"  # Optionally use a dynamic state for CSRF protection
 
-    if error:
-        return JsonResponse({'error': error}, status=400)
+    apple_auth_url = (
+        f"https://appleid.apple.com/auth/authorize"
+        f"?response_type=code&response_mode=form_post"
+        f"&client_id={client_id}&redirect_uri={redirect_uri}&scope=name%20email&state={state}"
+    )
+    return redirect(apple_auth_url)
 
+def apple_auth_web_callback(request):
+    """
+    Handles the Apple callback (Step 2).
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method Not Allowed"}, status=405)
+
+    # Get the code from the callback
+    code = request.POST.get("code")
     if not code:
-        return JsonResponse({'error': 'Authorization code missing'}, status=400)
+        return JsonResponse({"error": "Authorization code missing"}, status=400)
 
-    # Send a POST request to Apple’s token endpoint to exchange the authorization code for an access token
-    token_url = 'https://appleid.apple.com/auth/token'
-    client_id = 'com.template.applicationwebproject'  # Replace with your Apple client ID
-    client_secret = settings.APPLE_CLIENT_SECRET  # Secret generated using the Apple Developer account
-    redirect_uri = 'https://web-frontend-dun.vercel.app/auth/callback'  # Your redirect URI
+    # Exchange code for tokens
+    token_url = "https://appleid.apple.com/auth/token"
+    client_id = "com.template.applicationwebproject"
+    client_secret = settings.APPLE_CLIENT_SECRET
+    redirect_uri = "https://backend-django-9c363a145383.herokuapp.com/api/auth/apple/callback"
 
     data = {
-        'client_id': client_id,
-        'client_secret': client_secret,
-        'code': code,
-        'grant_type': 'authorization_code',
-        'redirect_uri': redirect_uri,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "code": code,
+        "grant_type": "authorization_code",
+        "redirect_uri": redirect_uri,
     }
-
-    headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-    }
-
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
     response = requests.post(token_url, data=data, headers=headers)
 
     if response.status_code != 200:
-        return JsonResponse({'error': 'Failed to retrieve token from Apple'}, status=500)
+        return JsonResponse({"error": "Failed to retrieve token from Apple"}, status=500)
 
-    # Parse the response to get the access token and id_token
     response_data = response.json()
-    id_token = response_data.get('id_token')
-    access_token = response_data.get('access_token')
-
+    id_token = response_data.get("id_token")
     if not id_token:
-        return JsonResponse({'error': 'ID token missing'}, status=400)
+        return JsonResponse({"error": "ID token missing"}, status=400)
 
-    # Decode the id_token (which is a JWT) to get user information
-    decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})  # Decoding without signature verification for now
-    user_id = decoded_id_token.get('sub')  # Extract user ID from the decoded token (this is Apple's unique identifier for the user)
+    # Decode the ID token (no signature verification for now)
+    decoded_id_token = jwt.decode(id_token, options={"verify_signature": False})
+    user_id = decoded_id_token.get("sub")  # Unique user ID from Apple
 
-    # Now, generate your own JWT token to use for authentication in your app
-    # This JWT can be used to authenticate the user in your own system
+    # Generate your own JWT for user authentication
     def generate_jwt(user_id):
         payload = {
-            'user_id': user_id,  # You can include other details as needed
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),  # Expiration time (1 day)
-            'iat': datetime.datetime.utcnow(),  # Issued at time
+            "user_id": user_id,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=1),
+            "iat": datetime.datetime.utcnow(),
         }
-        
-        secret_key = settings.JWT_SECRET_KEY  # You should store this in your Django settings
-        
-        token = jwt.encode(payload, secret_key, algorithm='HS256')  # Generate the token using your secret key
-        return token
+        secret_key = settings.JWT_SECRET_KEY
+        return jwt.encode(payload, secret_key, algorithm="HS256")
 
-    user_token = generate_jwt(user_id)  # Generate the JWT for the authenticated user
+    user_token = generate_jwt(user_id)
 
-    # Return the generated token and the redirect URL to the frontend
-    response_data = {
-        'token': user_token,
-        'redirect': '/dashboard/',  # Redirect URL after login
-    }
+    # Redirect to the React app with the authentication completed
+    frontend_dashboard_url = f"https://web-frontend-dun.vercel.app/dashboard"
+    return redirect(f"{frontend_dashboard_url}?token={user_token}")
 
-    return JsonResponse(response_data)
 
 
 '''
