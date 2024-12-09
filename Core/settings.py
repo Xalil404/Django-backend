@@ -186,12 +186,14 @@ CORS_ALLOW_ALL_ORIGINS = True  # True For development
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://web-frontend-dun.vercel.app",
+    "https://appleid.apple.com",
 ]
 
 # For production, restrict this to specific domains
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React local development server
     'https://web-frontend-dun.vercel.app',  # Your deployed React app
+    "https://appleid.apple.com",
 ]
 
 # When your frontend and backend are hosted on different domains (e.g., 
