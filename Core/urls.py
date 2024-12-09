@@ -55,6 +55,6 @@ urlpatterns = [
     path('api/auth/google/', google_auth, name='google-auth'),
     path('api/auth/google-redirect/', google_auth_redirect, name='google-auth-redirect'),
     path('api/auth/apple/web/', apple_auth_web, name='apple-auth-web'),
-    path('api/auth/apple/web/redirect/', views.apple_auth_redirect, name='apple_auth_redirect'),
+    path('api/auth/apple/web/redirect/', apple_auth_redirect, name='apple_auth_redirect'),
 ]
 handler404 = 'Core.views.handler404'
