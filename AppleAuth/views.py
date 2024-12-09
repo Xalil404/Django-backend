@@ -103,6 +103,7 @@ def apple_auth_web(request):
 
 
 # Web redirect view
+@csrf_exempt
 def apple_auth_web_redirect(request):
     """
     Initiates Apple Sign-In (Step 1).
@@ -118,12 +119,14 @@ def apple_auth_web_redirect(request):
     )
     return redirect(apple_auth_url)
 
+
+@csrf_exempt
 def apple_auth_web_callback(request):
     """
     Handles the Apple callback (Step 2).
     """
     if request.method != "POST":
-        return JsonResponse({"error": "Method Not Allowed"}, status=405)
+        return JsonResponse({"error": "Get Method Not Allowed"}, status=405)
 
     # Get the code from the callback
     code = request.POST.get("code")
