@@ -107,7 +107,24 @@ def apple_auth_web(request):
 
 
 # Web redirect view
-# Fetch the Apple public key
+def fetch_apple_public_key():
+    cached_keys = cache.get("apple_public_key")
+    if cached_keys:
+        return cached_keys
+
+    response = requests.get(APPLE_KEYS_URL)
+    if response.status_code == 200:
+        keys = response.json().get("keys")
+        cache.set("apple_public_key", keys, timeout=86400)
+        return keys
+    return None
+
+def get_key_for_kid(kid, keys):
+    for key in keys:
+        if key["kid"] == kid:
+            return key
+    return None
+
 @csrf_exempt
 def apple_auth_redirect(request):
     if request.method != 'POST':
