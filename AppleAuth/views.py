@@ -135,65 +135,70 @@ def generate_client_secret():
 
 @csrf_exempt
 def apple_auth_redirect(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    if request.method == 'POST':
+        try:
+            # Handle the POST request from Apple
+            body = json.loads(request.body.decode('utf-8'))
+            code = body.get('code')
 
-    try:
-        body = json.loads(request.body.decode('utf-8'))
-        code = body.get('code')
+            if not code:
+                return JsonResponse({'error': 'Authorization code is missing'}, status=400)
 
-        if not code:
-            return JsonResponse({'error': 'Authorization code is missing'}, status=400)
+            # Exchange the authorization code for an access token
+            client_id = settings.SOCIALACCOUNT_PROVIDERS['apple']['CLIENT_ID']
+            client_secret = generate_client_secret()
+            redirect_uri = settings.APPLE_REDIRECT_URI  # Ensure this is defined in your settings
 
-        # Exchange the authorization code for an access token
-        client_id = settings.SOCIALACCOUNT_PROVIDERS['apple']['CLIENT_ID']
-        client_secret = generate_client_secret()
-        redirect_uri = settings.APPLE_REDIRECT_URI  # Ensure this is defined in your settings
+            data = {
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'code': code,
+                'grant_type': 'authorization_code',
+                'redirect_uri': redirect_uri,
+            }
 
-        data = {
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'code': code,
-            'grant_type': 'authorization_code',
-            'redirect_uri': redirect_uri,
-        }
+            response = requests.post(APPLE_TOKEN_URL, data=data)
+            if response.status_code != 200:
+                return JsonResponse({'error': 'Failed to fetch token from Apple'}, status=500)
 
-        response = requests.post(APPLE_TOKEN_URL, data=data)
-        if response.status_code != 200:
-            return JsonResponse({'error': 'Failed to fetch token from Apple'}, status=500)
+            token_response = response.json()
+            id_token = token_response.get('id_token')
 
-        token_response = response.json()
-        id_token = token_response.get('id_token')
+            if not id_token:
+                return JsonResponse({'error': 'ID token is missing'}, status=400)
 
-        if not id_token:
-            return JsonResponse({'error': 'ID token is missing'}, status=400)
+            # Decode and validate the token
+            decoded_token = jwt.decode(
+                id_token,
+                algorithms=['RS256'],
+                audience=client_id
+            )
 
-        # Decode and validate the token
-        decoded_token = jwt.decode(
-            id_token,
-            algorithms=['RS256'],
-            audience=client_id
-        )
+            # Extract user info
+            apple_user_id = decoded_token['sub']
+            email = decoded_token.get('email', '')
 
-        # Extract user info
-        apple_user_id = decoded_token['sub']
-        email = decoded_token.get('email', '')
+            # Get or create the user
+            user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
+            if created:
+                logger.info(f"Created new user: {user.username}")
 
-        # Get or create the user
-        user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
-        if created:
-            logger.info(f"Created new user: {user.username}")
+            # Generate an auth token for the user
+            token, _ = Token.objects.get_or_create(user=user)
 
-        # Generate an auth token for the user
-        token, _ = Token.objects.get_or_create(user=user)
+            return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
 
-        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Token has expired'}, status=401)
+        except jwt.JWTError as e:
+            logger.error(f"Token validation error: {str(e)}")
+            return JsonResponse({'error': 'Invalid token'}, status=400)
+        except Exception as e:
+            logger.error(f"Unhandled error: {str(e)}")
+            return JsonResponse({'error': 'Internal server error'}, status=500)
 
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Token has expired'}, status=401)
-    except jwt.JWTError as e:
-        logger.error(f"Token validation error: {str(e)}")
-        return JsonResponse({'error': 'Invalid token'}, status=400)
-    except Exception as e:
-        logger.error(f"Unhandled error: {str(e)}")
-        return JsonResponse({'error': 'Internal server error'}, status=500)
+    elif request.method == 'GET':
+        # Handle GET requests for debugging purposes
+        return JsonResponse({'error': 'GET method not supported for authentication'}, status=405)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
