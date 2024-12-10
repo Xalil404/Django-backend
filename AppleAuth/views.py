@@ -14,6 +14,7 @@ from django.shortcuts import redirect
 import jwt
 import datetime
 from django.core.cache import cache
+from urllib.parse import urlencode
 
 
 logger = logging.getLogger(__name__)
@@ -108,73 +109,19 @@ def apple_auth_web(request):
 # Web redirect view
 @csrf_exempt
 def apple_auth_redirect(request):
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+  """
+  Redirects user to Apple Sign-In authorization endpoint.
 
-    try:
-        body = json.loads(request.body.decode('utf-8'))
-        code = body.get('code')
-        user = body.get('user')  # Include handling for user information if needed
-        state = body.get('state')
-
-        if not code:
-            return JsonResponse({'error': 'Authorization code is missing'}, status=400)
-
-        client_id = settings.SOCIALACCOUNT_PROVIDERS['apple']['CLIENT_ID']
-        client_secret = settings.SOCIALACCOUNT_PROVIDERS['apple']['SECRET_KEY']
-        redirect_uri = 'https://web-frontend-dun.vercel.app/apple-redirect'  # Ensure this matches your React route
-
-        token_data = {
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'code': code,
-            'grant_type': 'authorization_code',
-            'redirect_uri': redirect_uri,
-        }
-
-        token_response = requests.post(APPLE_TOKEN_URL, data=token_data)
-        if token_response.status_code != 200:
-            return JsonResponse({'error': 'Failed to get token from Apple'}, status=400)
-
-        token_response_data = token_response.json()
-        id_token = token_response_data['id_token']
-
-        public_keys = fetch_apple_public_key()
-        if not public_keys:
-            return JsonResponse({'error': 'Could not fetch Apple public key'}, status=500)
-
-        header = jwt.get_unverified_header(id_token)
-        key = get_key_for_kid(header['kid'], public_keys)
-
-        if not key:
-            logger.error("No matching key found for the token.")
-            return JsonResponse({'error': 'Invalid token'}, status=400)
-
-        public_key = jwk.construct(key)
-        decoded_token = jwt.decode(
-            id_token,
-            public_key.to_pem(),
-            algorithms=['RS256'],
-            audience=client_id
-        )
-
-        apple_user_id = decoded_token['sub']
-        email = decoded_token.get('email', '')
-
-        user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
-        if created:
-            logger.info(f"Created new user: {user.username}")
-
-        token, _ = Token.objects.get_or_create(user=user)
-
-        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
-
-    except jwt.ExpiredSignatureError:
-        return JsonResponse({'error': 'Token has expired'}, status=401)
-    except jwt.JWTError as e:
-        logger.error(f"Token validation error: {str(e)}")
-        return JsonResponse({'error': 'Invalid token'}, status=400)
-    except Exception as e:
-        logger.error(f"Unhandled error: {str(e)}")
-        return JsonResponse({'error': 'Internal server error'}, status=500)
-
+  Builds the redirect URL with necessary parameters and sends the user.
+  """
+  state = generate_random_string()  # Generate random string for CSRF protection
+  params = {
+      'client_id': settings.APPLE_CLIENT_ID,
+      'redirect_uri': settings.APPLE_REDIRECT_URI,
+      'scope': 'name email',  # Request user name and email if desired
+      'state': state,
+      'response_type': 'code',
+      'response_mode': 'form_post',  # Use form post for redirect flow
+  }
+  authorization_url = f"https://appleid.apple.com/auth/authorize?{urlencode(params)}"
+  return redirect(authorization_url)
