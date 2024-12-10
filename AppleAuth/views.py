@@ -14,7 +14,7 @@ from django.shortcuts import redirect
 import jwt
 import datetime
 from django.core.cache import cache
-from urllib.parse import urlencode
+
 
 
 logger = logging.getLogger(__name__)
@@ -107,21 +107,93 @@ def apple_auth_web(request):
 
 
 # Web redirect view
+def generate_client_secret():
+    apple_settings = settings.SOCIALACCOUNT_PROVIDERS.get('apple', {})
+    team_id = apple_settings.get('TEAM_ID')
+    client_id = apple_settings.get('CLIENT_ID')
+    key_id = apple_settings.get('KEY_ID')
+    secret_key_path = apple_settings.get('SECRET_KEY')
+
+    with open(secret_key_path, 'r') as key_file:
+        secret_key = key_file.read()
+
+    headers = {
+        'kid': key_id,
+        'alg': 'ES256'
+    }
+
+    claims = {
+        'iss': team_id,
+        'iat': int(time.time()),
+        'exp': int(time.time()) + 86400 * 180,  # 6 months
+        'aud': 'https://appleid.apple.com',
+        'sub': client_id
+    }
+
+    client_secret = jwt.encode(claims, secret_key, algorithm='ES256', headers=headers)
+    return client_secret
+
 @csrf_exempt
 def apple_auth_redirect(request):
-  """
-  Redirects user to Apple Sign-In authorization endpoint.
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
-  Builds the redirect URL with necessary parameters and sends the user.
-  """
-  state = generate_random_string()  # Generate random string for CSRF protection
-  params = {
-      'client_id': settings.APPLE_CLIENT_ID,
-      'redirect_uri': settings.APPLE_REDIRECT_URI,
-      'scope': 'name email',  # Request user name and email if desired
-      'state': state,
-      'response_type': 'code',
-      'response_mode': 'form_post',  # Use form post for redirect flow
-  }
-  authorization_url = f"https://appleid.apple.com/auth/authorize?{urlencode(params)}"
-  return redirect(authorization_url)
+    try:
+        body = json.loads(request.body.decode('utf-8'))
+        code = body.get('code')
+
+        if not code:
+            return JsonResponse({'error': 'Authorization code is missing'}, status=400)
+
+        # Exchange the authorization code for an access token
+        client_id = settings.SOCIALACCOUNT_PROVIDERS['apple']['CLIENT_ID']
+        client_secret = generate_client_secret()
+        redirect_uri = settings.APPLE_REDIRECT_URI  # Ensure this is defined in your settings
+
+        data = {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'code': code,
+            'grant_type': 'authorization_code',
+            'redirect_uri': redirect_uri,
+        }
+
+        response = requests.post(APPLE_TOKEN_URL, data=data)
+        if response.status_code != 200:
+            return JsonResponse({'error': 'Failed to fetch token from Apple'}, status=500)
+
+        token_response = response.json()
+        id_token = token_response.get('id_token')
+
+        if not id_token:
+            return JsonResponse({'error': 'ID token is missing'}, status=400)
+
+        # Decode and validate the token
+        decoded_token = jwt.decode(
+            id_token,
+            algorithms=['RS256'],
+            audience=client_id
+        )
+
+        # Extract user info
+        apple_user_id = decoded_token['sub']
+        email = decoded_token.get('email', '')
+
+        # Get or create the user
+        user, created = User.objects.get_or_create(username=apple_user_id, defaults={'email': email})
+        if created:
+            logger.info(f"Created new user: {user.username}")
+
+        # Generate an auth token for the user
+        token, _ = Token.objects.get_or_create(user=user)
+
+        return JsonResponse({'token': token.key, 'redirect': '/dashboard/'})
+
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Token has expired'}, status=401)
+    except jwt.JWTError as e:
+        logger.error(f"Token validation error: {str(e)}")
+        return JsonResponse({'error': 'Invalid token'}, status=400)
+    except Exception as e:
+        logger.error(f"Unhandled error: {str(e)}")
+        return JsonResponse({'error': 'Internal server error'}, status=500)
