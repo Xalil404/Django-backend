@@ -24,7 +24,7 @@ from drf_yasg import openapi
 #For Google authentication
 from GoogleAuth.views import google_auth, google_auth_redirect, google_auth_mobile
 #For Apple authentication
-from AppleAuth.views import apple_auth_web, apple_auth_redirect
+from AppleAuth.views import apple_auth_web, apple_auth_redirect, apple_auth_mobile
 
 # REST API Documentation
 schema_view = get_schema_view(
@@ -57,5 +57,6 @@ urlpatterns = [
     path('api/auth/google/mobile/', google_auth_mobile, name='google-auth-mobile'),
     path('api/auth/apple/web/', apple_auth_web, name='apple-auth-web'),
     path('api/auth/apple/web/redirect/', apple_auth_redirect, name='apple_auth_redirect'),
+    path('api/auth/apple/mobile/', apple_auth_mobile, name='apple-auth-mobile'),
 ]
 handler404 = 'Core.views.handler404'
