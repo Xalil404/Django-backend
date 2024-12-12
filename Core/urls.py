@@ -22,7 +22,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 #For Google authentication
-from GoogleAuth.views import google_auth, google_auth_redirect
+from GoogleAuth.views import google_auth, google_auth_redirect, google_auth_mobile
 #For Apple authentication
 from AppleAuth.views import apple_auth_web, apple_auth_redirect
 
@@ -54,6 +54,7 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/auth/google/', google_auth, name='google-auth'),
     path('api/auth/google-redirect/', google_auth_redirect, name='google-auth-redirect'),
+    path('api/auth/google/mobile/', google_auth_mobile, name='google-auth-mobile'),
     path('api/auth/apple/web/', apple_auth_web, name='apple-auth-web'),
     path('api/auth/apple/web/redirect/', apple_auth_redirect, name='apple_auth_redirect'),
 ]

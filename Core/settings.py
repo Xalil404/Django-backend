@@ -115,9 +115,11 @@ APPLE_CLIENT_ID = 'com.template.applicationwebproject'
 APPLE_REDIRECT_URI = os.environ.get('APPLE_REDIRECT_URI', 'https://web-frontend-dun.vercel.app/auth/callback')  # Replace with your actual redirect URI
 
 # Top one is for web & second one is for mobile
-GOOGLE_CLIENT_ID = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
-
-
+GOOGLE_CLIENT_IDS = [
+    '26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com'
+    '26271032790-eseivdiuanqo0bts5pbi4a1pbao699gd.apps.googleusercontent.com'
+] 
+# GOOGLE_CLIENT_ID = "26271032790-djnijd5ookmvg0d58pneg2l8l6bdgvbn.apps.googleusercontent.com"
 
 #EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
