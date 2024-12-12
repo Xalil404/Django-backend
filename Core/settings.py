@@ -161,7 +161,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',  # Permissions for authenticated users
-        'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -175,9 +174,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'allauth.account.middleware.AccountMiddleware', # to serve css of admin panel in production
-    'Core.middleware.CsrfExemptMiddleware', # to make csrf exempt for mobile app registration
+    'whitenoise.middleware.WhiteNoiseMiddleware', # to serve css of admin panel in production
+    'allauth.account.middleware.AccountMiddleware', 
 ]
 
 
