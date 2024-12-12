@@ -181,6 +181,7 @@ def google_auth_redirect(request):
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
 
+# Mobile app authentication
 @csrf_exempt
 def google_auth_mobile(request):
     if request.method == 'POST':
