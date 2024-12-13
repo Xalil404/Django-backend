@@ -190,8 +190,8 @@ def google_auth_mobile(request):
         token = body.get('token')
 
         try:
-            # Verify the token with Google for the mobile client ID
-            idinfo = id_token.verify_oauth2_token(token, requests.Request(), "26271032790-eseivdiuanqo0bts5pbi4a1pbao699gd.apps.googleusercontent.com")
+            # Verify the token with Google for the mobile client ID 
+            idinfo = id_token.verify_oauth2_token(token, requests.Request(), "1010986907178-s8ckurj79jcu41a56fdk1ng7bnah1bgm.apps.googleusercontent.com")
             email = idinfo['email']
             first_name = idinfo.get('given_name', '')
             last_name = idinfo.get('family_name', '')
