@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from rest_framework.authtoken.models import Token
 import logging
 from google.auth.transport import requests
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
